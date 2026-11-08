@@ -64,6 +64,7 @@ Route::middleware(array_filter(['auth', config('thriftverse.require_verified') ?
     Route::get('/pesanan/{transaction}/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
     Route::post('/pesanan/{transaction}/checkout', [OrderController::class, 'confirmCheckout'])->name('orders.checkout.confirm');
     Route::post('/pesanan/{transaction}/bayar', [OrderController::class, 'pay'])->name('orders.pay');
+    Route::post('/pesanan/{transaction}/midtrans-token', [OrderController::class, 'midtransToken'])->name('orders.midtrans.token');
     Route::post('/pesanan/{transaction}/kirim', [OrderController::class, 'ship'])->name('orders.ship');
     Route::post('/pesanan/{transaction}/terima', [OrderController::class, 'receive'])->name('orders.receive');
     Route::post('/pesanan/{transaction}/batal', [OrderController::class, 'cancel'])->name('orders.cancel');
@@ -99,6 +100,10 @@ Route::middleware(array_filter(['auth', config('thriftverse.require_verified') ?
     Route::post('/jadwal-cod/{schedule}/gagal-bertemu', [CodController::class, 'noShow'])->name('cod.noshow');
     Route::post('/jadwal-cod/{schedule}/masalah', [CodController::class, 'problem'])->name('cod.problem');
 });
+
+Route::post('/midtrans/notification', [OrderController::class, 'midtransNotification'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('midtrans.notification');
 
 // ---------- Admin ----------
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

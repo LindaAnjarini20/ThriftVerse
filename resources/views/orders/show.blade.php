@@ -22,8 +22,39 @@
       <div class="card space-y-3 p-5"><h2 class="font-extrabold">Tindakan</h2>
         @if($tx->status==='pending' && ! $tx->delivery_method && $isBuyer && $tx->type==='purchase')<a href="{{ route('orders.checkout', $tx) }}" class="btn btn-brand w-full">Lanjut Checkout</a>@endif
         @if($tx->status==='pending' && $tx->escrow_status==='pending' && $tx->payer_id===$me->id)
-          <form method="POST" action="{{ route('orders.pay', $tx) }}">@csrf<button class="btn btn-brand w-full !py-3">Bayar @rp($tx->total) (simulasi sandbox)</button></form>
-          <p class="text-xs text-ink/60">Batas {{ $tx->hold_until?->format('d M H:i') }} WIB. Ganti dengan payment gateway nyata (VA/e-wallet/QRIS) pada rilis berikutnya.</p>@endif
+          @if($tx->payment_method === 'app' && config('services.midtrans.client_key'))
+            <button type="button" id="pay-midtrans" class="btn btn-brand w-full !py-3">Bayar @rp($tx->total) dengan Midtrans</button>
+            <p id="midtrans-message" class="text-xs text-ink/60">Batas {{ $tx->hold_until?->format('d M H:i') }} WIB.</p>
+            <script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
+            <script>
+              document.getElementById('pay-midtrans').addEventListener('click', async function () {
+                const button = this;
+                const message = document.getElementById('midtrans-message');
+                button.disabled = true;
+                message.textContent = 'Menyiapkan pembayaran...';
+                try {
+                  const response = await fetch('{{ route('orders.midtrans.token', $tx) }}', {
+                    method: 'POST',
+                    headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json'}
+                  });
+                  const data = await response.json();
+                  if (!response.ok || !data.token) throw new Error(data.message || 'Token pembayaran gagal dibuat.');
+                  window.snap.pay(data.token, {
+                    onSuccess: () => window.location.reload(),
+                    onPending: () => window.location.reload(),
+                    onError: () => { message.textContent = 'Pembayaran gagal. Silakan coba lagi.'; button.disabled = false; },
+                    onClose: () => { message.textContent = 'Pembayaran dibatalkan atau belum selesai.'; button.disabled = false; }
+                  });
+                } catch (error) {
+                  message.textContent = error.message;
+                  button.disabled = false;
+                }
+              });
+            </script>
+          @else
+            <p class="text-sm text-red-600">Midtrans belum dikonfigurasi.</p>
+          @endif
+          <p class="text-xs text-ink/60">Batas {{ $tx->hold_until?->format('d M H:i') }} WIB.</p>@endif
         @if($tx->cart_group && $isBuyer && $tx->status==='pending' && $tx->escrow_status==='pending')<form method="POST" action="{{ route('cart.payall', $tx->cart_group) }}">@csrf<button class="btn btn-soft w-full">Bayar semua pesanan keranjang ini (simulasi)</button></form>@endif
         @if($tx->isCod() && $tx->schedule)<a href="{{ route('cod.show', $tx->schedule) }}" class="btn btn-indigo w-full">Buka Jadwal & Serah Terima COD</a>@endif
         @if($isSeller && $tx->status==='packed' && $tx->delivery_method==='ekspedisi')

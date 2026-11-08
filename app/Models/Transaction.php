@@ -5,11 +5,12 @@ class Transaction extends Model
 {
     protected $fillable = ['transaction_number', 'listing_id', 'seller_id', 'buyer_id', 'payer_id', 'bid_id', 'barter_id', 'type',
         'delivery_method', 'payment_method', 'agreed_price', 'shipping_cost', 'service_fee', 'total', 'status', 'escrow_status',
-        'hold_until', 'paid_at', 'ship_by', 'courier', 'tracking_no', 'shipped_at', 'auto_complete_at', 'completed_at', 'cancel_reason', 'voucher_id', 'voucher_group', 'discount', 'cart_group'];
+        'hold_until', 'paid_at', 'ship_by', 'courier', 'tracking_no', 'shipped_at', 'auto_complete_at', 'completed_at', 'cancel_reason', 'voucher_id', 'voucher_group', 'discount', 'cart_group',
+        'midtrans_status', 'midtrans_transaction_id', 'midtrans_paid_at'];
 
     protected $casts = ['agreed_price' => 'float', 'shipping_cost' => 'float', 'service_fee' => 'float', 'total' => 'float', 'discount' => 'float',
             'hold_until' => 'datetime', 'paid_at' => 'datetime', 'ship_by' => 'datetime', 'shipped_at' => 'datetime',
-            'auto_complete_at' => 'datetime', 'completed_at' => 'datetime'];
+            'auto_complete_at' => 'datetime', 'completed_at' => 'datetime', 'midtrans_paid_at' => 'datetime'];
 
     public function listing() { return $this->belongsTo(Listing::class)->withTrashed(); }
     public function seller() { return $this->belongsTo(User::class, 'seller_id'); }

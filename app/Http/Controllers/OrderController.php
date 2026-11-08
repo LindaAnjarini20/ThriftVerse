@@ -2,8 +2,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\{CodSchedule, Listing, MeetingPoint, Report, Review, Transaction};
-use App\Services\{OrderService, VoucherService};
+use App\Services\{MidtransService, OrderService, VoucherService};
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 /** Pesanan, pembayaran, pengiriman, rekber (SRS 4.5). */
 class OrderController extends Controller
@@ -96,6 +98,55 @@ class OrderController extends Controller
         abort_unless($transaction->payer_id === auth()->id() && in_array($transaction->status, ['pending', 'packed'], true) && $transaction->escrow_status === 'pending', 403);
         OrderService::fund($transaction);
         return back()->with('success', 'Pembayaran (simulasi) berhasil. Dana ditahan rekber hingga pesanan selesai.');
+    }
+
+    public function midtransToken(Transaction $transaction): JsonResponse
+    {
+        abort_unless($transaction->payer_id === auth()->id()
+            && $transaction->status === 'pending'
+            && $transaction->escrow_status === 'pending'
+            && $transaction->payment_method === 'app', 403);
+
+        return response()->json(['token' => MidtransService::snapToken($transaction)]);
+    }
+
+    public function midtransNotification(Request $request): JsonResponse
+    {
+        $notification = $request->all();
+        abort_unless(MidtransService::verifyNotification($notification), 403, 'Signature Midtrans tidak valid.');
+
+        $transaction = Transaction::where('transaction_number', $notification['order_id'] ?? '')->first();
+        if (! $transaction) {
+            return response()->json(['message' => 'Transaksi tidak ditemukan.'], 404);
+        }
+
+        abort_unless((int) round((float) ($notification['gross_amount'] ?? 0)) === (int) round($transaction->total), 422, 'Nominal transaksi tidak sesuai.');
+
+        $shouldCancel = false;
+        DB::transaction(function () use ($transaction, $notification, &$shouldCancel) {
+            $transaction->refresh();
+            $status = (string) ($notification['transaction_status'] ?? '');
+            $transaction->update([
+                'midtrans_status' => $status,
+                'midtrans_transaction_id' => $notification['transaction_id'] ?? null,
+            ]);
+
+            if (in_array($status, ['capture', 'settlement'], true)
+                && ($notification['fraud_status'] ?? 'accept') === 'accept'
+                && $transaction->escrow_status === 'pending') {
+                $transaction->midtrans_paid_at = now();
+                $transaction->save();
+                OrderService::fund($transaction);
+            }
+            $shouldCancel = in_array($status, ['deny', 'cancel', 'expire'], true)
+                && $transaction->escrow_status === 'pending'
+                && $transaction->status === 'pending';
+        });
+        if ($shouldCancel) {
+            OrderService::cancel($transaction, 'Pembayaran Midtrans tidak selesai.');
+        }
+
+        return response()->json(['message' => 'OK']);
     }
 
     public function ship(Request $request, Transaction $transaction)
