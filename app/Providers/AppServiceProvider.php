@@ -3,6 +3,7 @@ namespace App\Providers;
 
 use App\Models\{Bid, CartItem, Message};
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,6 +13,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         Blade::directive('rp', fn ($e) => "<?php echo 'Rp'.number_format((float)($e), 0, ',', '.'); ?>");
 
         View::composer(['layouts.app', 'layouts.admin'], function ($view) {
