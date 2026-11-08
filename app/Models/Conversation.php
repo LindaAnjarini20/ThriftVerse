@@ -1,0 +1,17 @@
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+
+class Conversation extends Model
+{
+    protected $fillable = ['listing_id', 'buyer_id', 'seller_id', 'last_message_at'];
+    protected $casts = ['last_message_at' => 'datetime'];
+
+    public function listing() { return $this->belongsTo(Listing::class)->withTrashed(); }
+    public function buyer() { return $this->belongsTo(User::class, 'buyer_id'); }
+    public function seller() { return $this->belongsTo(User::class, 'seller_id'); }
+    public function messages() { return $this->hasMany(Message::class)->orderBy('id'); }
+
+    public function involves(User $u): bool { return in_array($u->id, [$this->buyer_id, $this->seller_id], true); }
+    public function other(User $u): User { return $u->id === $this->buyer_id ? $this->seller : $this->buyer; }
+}

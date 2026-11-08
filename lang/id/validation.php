@@ -1,0 +1,42 @@
+<?php
+// Terjemahan validasi (Bahasa Indonesia). Kunci yang tidak ada akan memakai bahasa Inggris bawaan Laravel.
+return [
+    'required' => ':attribute wajib diisi.',
+    'required_if' => ':attribute wajib diisi.',
+    'email' => ':attribute harus berupa alamat email yang valid.',
+    'unique' => ':attribute sudah dipakai.',
+    'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+    'numeric' => ':attribute harus berupa angka.',
+    'integer' => ':attribute harus berupa bilangan bulat.',
+    'string' => ':attribute harus berupa teks.',
+    'array' => ':attribute harus berupa daftar.',
+    'image' => ':attribute harus berupa gambar.',
+    'mimes' => ':attribute harus berformat: :values.',
+    'digits' => ':attribute harus :digits digit.',
+    'in' => ':attribute yang dipilih tidak valid.',
+    'exists' => ':attribute yang dipilih tidak valid.',
+    'date' => ':attribute bukan tanggal yang valid.',
+    'after' => ':attribute harus lebih dari satu jam dari sekarang.',
+    'alpha_dash' => ':attribute hanya boleh huruf, angka, strip, dan garis bawah.',
+    'lte' => [ 'numeric' => ':attribute tidak boleh melebihi harga jual.' ],
+    'between' => [ 'numeric' => ':attribute harus antara :min dan :max.' ],
+    'current_password' => 'Kata sandi saat ini salah.',
+    'min' => [
+        'numeric' => ':attribute minimal :min.', 'file' => ':attribute minimal :min KB.',
+        'string' => ':attribute minimal :min karakter.', 'array' => ':attribute minimal :min item.',
+    ],
+    'max' => [
+        'numeric' => ':attribute maksimal :max.', 'file' => ':attribute maksimal :max KB.',
+        'string' => ':attribute maksimal :max karakter.', 'array' => ':attribute maksimal :max item.',
+    ],
+    'uploaded' => ':attribute gagal diunggah.',
+    'attributes' => [
+        'name' => 'Nama', 'email' => 'Email', 'password' => 'Kata sandi', 'username' => 'Username', 'login' => 'Email/username',
+        'title' => 'Judul', 'category' => 'Kategori', 'current_price' => 'Harga jual', 'secret_min_price' => 'Harga minimum rahasia',
+        'amount' => 'Nominal', 'photo_front' => 'Foto depan', 'photo_back' => 'Foto belakang', 'photo_label' => 'Foto label',
+        'photo_detail' => 'Foto detail', 'minus_photos' => 'Foto detail minus', 'minus_note' => 'Catatan minus', 'evidence' => 'Foto bukti',
+        'reason' => 'Alasan', 'scheduled_at' => 'Waktu pertemuan', 'meeting_point_id' => 'Titik temu', 'code' => 'Kode',
+        'items' => 'Barang barter', 'cash_top_up' => 'Uang tambahan', 'tracking_no' => 'Nomor resi', 'courier' => 'Kurir',
+        'no_hp' => 'No. HP', 'area' => 'Area', 'payout_account' => 'Rekening pencairan', 'rating' => 'Rating',
+    ],
+];
