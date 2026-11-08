@@ -57,12 +57,36 @@ class MidtransService
     public static function verifyNotification(array $notification): bool
     {
         $serverKey = config('services.midtrans.server_key');
+        if (! $serverKey) {
+            return false;
+        }
+
         $signature = hash('sha512', ($notification['order_id'] ?? '')
             .($notification['status_code'] ?? '')
             .($notification['gross_amount'] ?? '')
             .$serverKey);
 
         return hash_equals($signature, (string) ($notification['signature_key'] ?? ''));
+    }
+
+    public static function transactionStatus(Transaction $transaction): array
+    {
+        $serverKey = config('services.midtrans.server_key');
+        if (! $serverKey) {
+            throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
+        }
+
+        $response = Http::withBasicAuth($serverKey, '')
+            ->acceptJson()
+            ->get(self::baseUrl().'/v2/'.rawurlencode($transaction->transaction_number).'/status');
+
+        $response->throw();
+        $status = $response->json();
+        if (! is_array($status)) {
+            throw new RuntimeException('Midtrans mengembalikan status transaksi yang tidak valid.');
+        }
+
+        return $status;
     }
 
     private static function baseUrl(): string

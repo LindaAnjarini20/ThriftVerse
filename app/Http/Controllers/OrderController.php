@@ -110,6 +110,24 @@ class OrderController extends Controller
         return response()->json(['token' => MidtransService::snapToken($transaction)]);
     }
 
+    public function midtransStatus(Transaction $transaction): JsonResponse
+    {
+        abort_unless($transaction->payer_id === auth()->id()
+            && $transaction->payment_method === 'app'
+            && $transaction->escrow_status === 'pending', 403);
+
+        $status = MidtransService::transactionStatus($transaction);
+        abort_unless(($status['order_id'] ?? null) === $transaction->transaction_number, 422, 'Transaksi Midtrans tidak sesuai.');
+        abort_unless((int) round((float) ($status['gross_amount'] ?? 0)) === (int) round($transaction->total), 422, 'Nominal transaksi tidak sesuai.');
+
+        $this->applyMidtransStatus($transaction, $status);
+
+        return response()->json([
+            'status' => $transaction->fresh()->midtrans_status,
+            'paid' => $transaction->fresh()->escrow_status === 'funded',
+        ]);
+    }
+
     public function midtransNotification(Request $request): JsonResponse
     {
         $notification = $request->all();
@@ -125,19 +143,8 @@ class OrderController extends Controller
         $shouldCancel = false;
         DB::transaction(function () use ($transaction, $notification, &$shouldCancel) {
             $transaction->refresh();
+            $this->applyMidtransStatus($transaction, $notification);
             $status = (string) ($notification['transaction_status'] ?? '');
-            $transaction->update([
-                'midtrans_status' => $status,
-                'midtrans_transaction_id' => $notification['transaction_id'] ?? null,
-            ]);
-
-            if (in_array($status, ['capture', 'settlement'], true)
-                && ($notification['fraud_status'] ?? 'accept') === 'accept'
-                && $transaction->escrow_status === 'pending') {
-                $transaction->midtrans_paid_at = now();
-                $transaction->save();
-                OrderService::fund($transaction);
-            }
             $shouldCancel = in_array($status, ['deny', 'cancel', 'expire'], true)
                 && $transaction->escrow_status === 'pending'
                 && $transaction->status === 'pending';
@@ -147,6 +154,23 @@ class OrderController extends Controller
         }
 
         return response()->json(['message' => 'OK']);
+    }
+
+    private function applyMidtransStatus(Transaction $transaction, array $notification): void
+    {
+        $status = (string) ($notification['transaction_status'] ?? '');
+        $transaction->update([
+            'midtrans_status' => $status,
+            'midtrans_transaction_id' => $notification['transaction_id'] ?? null,
+        ]);
+
+        if (in_array($status, ['capture', 'settlement'], true)
+            && ($notification['fraud_status'] ?? 'accept') === 'accept'
+            && $transaction->escrow_status === 'pending') {
+            $transaction->midtrans_paid_at = now();
+            $transaction->save();
+            OrderService::fund($transaction);
+        }
     }
 
     public function ship(Request $request, Transaction $transaction)

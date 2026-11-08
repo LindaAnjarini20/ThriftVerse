@@ -40,8 +40,8 @@
                   const data = await response.json();
                   if (!response.ok || !data.token) throw new Error(data.message || 'Token pembayaran gagal dibuat.');
                   window.snap.pay(data.token, {
-                    onSuccess: () => window.location.reload(),
-                    onPending: () => window.location.reload(),
+                    onSuccess: syncMidtransStatus,
+                    onPending: syncMidtransStatus,
                     onError: () => { message.textContent = 'Pembayaran gagal. Silakan coba lagi.'; button.disabled = false; },
                     onClose: () => { message.textContent = 'Pembayaran dibatalkan atau belum selesai.'; button.disabled = false; }
                   });
@@ -50,6 +50,23 @@
                   button.disabled = false;
                 }
               });
+
+              async function syncMidtransStatus() {
+                message.textContent = 'Memastikan status pembayaran...';
+                for (let attempt = 0; attempt < 5; attempt++) {
+                  const response = await fetch('{{ route('orders.midtrans.status', $tx) }}', {
+                    headers: {'Accept': 'application/json'}
+                  });
+                  const data = await response.json();
+                  if (response.ok && data.paid) {
+                    window.location.reload();
+                    return;
+                  }
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+                message.textContent = 'Pembayaran belum terkonfirmasi. Pastikan webhook Midtrans sudah diarahkan ke aplikasi.';
+                button.disabled = false;
+              }
             </script>
           @else
             <p class="text-sm text-red-600">Midtrans belum dikonfigurasi.</p>

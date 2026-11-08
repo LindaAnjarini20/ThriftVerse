@@ -3,3 +3,5 @@ node_modules
 .env
 .env.tidb
 .git
+bootstrap/cache/*.php
+storage/logs/*
