@@ -15,6 +15,10 @@ class MidtransService
             throw new RuntimeException('MIDTRANS_SERVER_KEY belum dikonfigurasi.');
         }
 
+        if (is_string($transaction->midtrans_snap_token) && $transaction->midtrans_snap_token !== '') {
+            return $transaction->midtrans_snap_token;
+        }
+
         $items = [[
             'id' => (string) $transaction->listing_id,
             'price' => (int) round($transaction->agreed_price),
@@ -50,6 +54,8 @@ class MidtransService
         if (! is_string($token) || $token === '') {
             throw new RuntimeException('Midtrans tidak mengembalikan Snap token.');
         }
+
+        $transaction->update(['midtrans_snap_token' => $token]);
 
         return $token;
     }

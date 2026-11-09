@@ -5,6 +5,7 @@ use App\Models\{CartItem, Conversation, Listing, Message, Transaction, User, Vou
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -22,6 +23,27 @@ class NewFeaturesTest extends TestCase
 
     private function u(string $name): User { return User::where('username', $name)->firstOrFail(); }
     private function l(string $like): Listing { return Listing::where('title', 'like', "%$like%")->firstOrFail(); }
+
+    public function test_midtrans_snap_token_is_reused_after_payment_popup_is_closed(): void
+    {
+        config(['services.midtrans.server_key' => 'test-server-key']);
+        Http::fake(['*' => Http::response(['token' => 'snap-token'], 201)]);
+
+        $buyer = $this->u('dimas_novan');
+        $item = $this->l('Carhartt');
+        $this->actingAs($buyer)->post("/listings/{$item->id}/beli");
+        $tx = Transaction::latest('id')->firstOrFail();
+        $this->post("/pesanan/{$tx->id}/checkout", [
+            'delivery_method' => 'ekspedisi',
+            'payment_method' => 'app',
+        ])->assertRedirect("/pesanan/{$tx->id}");
+
+        $this->postJson("/pesanan/{$tx->id}/midtrans-token")->assertOk()->assertJson(['token' => 'snap-token']);
+        $this->postJson("/pesanan/{$tx->id}/midtrans-token")->assertOk()->assertJson(['token' => 'snap-token']);
+
+        $this->assertSame('snap-token', $tx->fresh()->midtrans_snap_token);
+        Http::assertSentCount(1);
+    }
 
     public function test_map_is_rendered_on_checkout_cod_and_listing_form(): void
     {
