@@ -78,9 +78,23 @@ class Listing extends Model
 
     public function isAvailable(): bool { return $this->status === 'active' && $this->stock > 0; }
 
+    /**
+     * URL publik sebuah foto. Memakai alamat relatif terhadap domain (bukan APP_URL) supaya gambar tetap tampil
+     * di localhost, Laragon, maupun Railway (https) tanpa mixed content.
+     * - 'seed/...'  : foto sampel bawaan aplikasi di public/images/seed (ikut ter-deploy)
+     * - lainnya     : unggahan penjual di storage/app/public (butuh `php artisan storage:link`)
+     */
+    public static function publicUrl(?string $path): ?string
+    {
+        if (! $path) return null;
+        if (preg_match('~^https?://~i', $path)) return $path;
+        if (str_starts_with($path, 'seed/')) return '/images/'.$path;
+        return '/storage/'.ltrim($path, '/');
+    }
+
     public function url(?string $path): ?string
     {
-        return $path ? Storage::disk('public')->url($path) : null;
+        return static::publicUrl($path);
     }
 
     public function coverUrl(): ?string { return $this->url(($this->images ?? [])[0] ?? null); }

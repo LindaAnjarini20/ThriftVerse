@@ -8,7 +8,7 @@
     <span class="mono rounded px-2 py-1 text-[10px] font-bold uppercase {{ $r->status==='open' ? 'bg-amber-100 text-amber-800' : 'bg-brand-light text-brand-dark' }}">{{ $r->status }}{{ $r->resolution ? ' · '.$r->resolution : '' }}</span></div>
     <div class="mt-2 text-sm"><b>{{ $r->reporter->name }}</b> melaporkan <b>{{ $r->target?->name ?? '—' }}</b>@if($t) · {{ $t->transaction_number }} · {{ $t->listing->title }} · escrow {{ $t->escrow_status }} (@rp($t->total))@elseif($r->listing) · listing {{ $r->listing->title }}@endif</div>
     <p class="mt-2 rounded-lg bg-sand p-3 text-sm">"{{ $r->reason }}"</p>
-    @if($r->evidence)<div class="mt-2 flex gap-2">@foreach($r->evidence as $e)<a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($e) }}" target="_blank"><img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($e) }}" class="h-20 w-20 rounded-lg object-cover" alt="bukti"></a>@endforeach</div>@endif
+    @if($r->evidence)<div class="mt-2 flex gap-2">@foreach($r->evidence as $e)<a href="{{ \App\Models\Listing::publicUrl($e) }}" target="_blank"><img src="{{ \App\Models\Listing::publicUrl($e) }}" class="h-20 w-20 rounded-lg object-cover" alt="bukti"></a>@endforeach</div>@endif
     @if($r->status==='open')
     <form method="POST" action="{{ route('admin.resolve', $r) }}" class="mt-3 flex flex-wrap items-center gap-2">@csrf<input name="admin_note" placeholder="Catatan admin" class="field max-w-xs">
       @if($t)<button name="resolution" value="refund" class="btn btn-brand">Lepas Dana ke Pembeli (Refund)</button><button name="resolution" value="release" class="btn btn-indigo">Cairkan ke Penjual</button>@endif

@@ -14,8 +14,12 @@
 @endphp
 <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
   <div class="space-y-4">
-    <div class="card overflow-hidden"><div class="aspect-[4/3] bg-sand">@include('partials.cover', ['listing' => $listing])</div>
-      @if(count($listing->images ?? []) > 1)<div class="grid grid-cols-4 gap-2 p-3">@foreach($listing->images as $i => $img)<img src="{{ $listing->url($img) }}" class="aspect-square rounded-lg object-cover" alt="foto {{ $i+1 }}">@endforeach</div>@endif</div>
+    <div class="card overflow-hidden" x-data="{ i: 0, imgs: {{ Js::from(collect($listing->images ?? [])->map(fn ($p) => $listing->url($p))->values()) }} }">
+      <div class="aspect-square bg-sand">
+        @if(count($listing->images ?? []))<img src="{{ $listing->coverUrl() }}" :src="imgs[i]" alt="{{ $listing->title }}" class="h-full w-full object-cover">
+        @else @include('partials.cover', ['listing' => $listing]) @endif
+      </div>
+      @if(count($listing->images ?? []) > 1)<div class="grid grid-cols-4 gap-2 p-3">@foreach($listing->images as $i => $img)<button type="button" @click="i = {{ $i }}" :class="i === {{ $i }} ? 'ring-2 ring-brand' : 'opacity-70 hover:opacity-100'" class="overflow-hidden rounded-lg"><img src="{{ $listing->url($img) }}" class="aspect-square w-full object-cover" alt="foto {{ $i+1 }}"></button>@endforeach</div>@endif</div>
     @if(count($listing->minus_photos ?? []))<div class="card p-4"><div class="mono mb-2 text-[11px] font-bold uppercase text-clay">Foto detail minus</div>
       <div class="grid grid-cols-3 gap-2">@foreach($listing->minus_photos as $m)<img src="{{ $listing->url($m) }}" class="aspect-square rounded-lg object-cover" alt="minus">@endforeach</div></div>@endif
     <div class="card p-5"><div class="mono text-[11px] font-bold uppercase text-ink/50">Riwayat harga</div>

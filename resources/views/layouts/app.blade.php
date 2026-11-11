@@ -10,17 +10,18 @@
 </head>
 <body class="min-h-screen bg-cream font-sans text-ink antialiased">
 @php $nav = fn($r) => request()->routeIs($r) ? 'bg-brand text-white' : 'text-ink/80 hover:bg-sand'; @endphp
-<header class="sticky top-0 z-40">
+<header class="relative z-40 sm:sticky sm:top-0">
     <div class="bg-dark text-white">
-        <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
                 <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-lg font-extrabold">T</span>
                 <span class="hidden text-lg font-extrabold tracking-tight sm:block">THRIFTVERSE</span>
             </a>
-            <form action="{{ route('home') }}" method="GET" class="mx-2 flex flex-1 items-center overflow-hidden rounded-xl bg-white text-ink ring-2 ring-brand/60">
+            <form action="{{ route('home') }}" method="GET" class="order-last flex w-full items-center overflow-hidden rounded-xl bg-white text-ink ring-2 ring-brand/60 sm:order-none sm:mx-2 sm:w-auto sm:flex-1">
                 <input name="q" value="{{ request('q') }}" placeholder="Cari jaket thrift, sepatu, atau barter barang…" class="w-full border-0 bg-transparent px-4 py-2.5 text-sm focus:outline-none">
                 <button class="m-1 rounded-lg bg-brand px-4 py-1.5 text-sm font-bold text-white">Cari</button>
             </form>
+            <div class="ml-auto flex items-center gap-1 sm:ml-0 sm:gap-3">
             @auth
                 <div class="hidden items-center rounded-full bg-white/10 p-1 text-[11px] font-bold md:flex">
                     <a href="{{ route('home') }}" class="rounded-full px-3 py-1.5 {{ ! request()->routeIs('listings.mine','listings.create','listings.edit') ? 'bg-brand' : 'text-white/70' }}">MODE PEMBELI</a>
@@ -32,7 +33,7 @@
                     @if($chatUnread)<span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold">{{ $chatUnread }}</span>@endif</a>
                 <a href="{{ route('cart.index') }}" class="relative rounded-lg p-2 hover:bg-white/10" title="Keranjang">🛒
                     @if($cartCount)<span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold">{{ $cartCount }}</span>@endif</a>
-                <a href="{{ route('orders.index') }}" class="rounded-lg p-2 hover:bg-white/10" title="Pesanan Saya">🛍️</a>
+                <a href="{{ route('orders.index') }}" class="hidden rounded-lg p-2 hover:bg-white/10 sm:block" title="Pesanan Saya">🛍️</a>
                 <div x-data="{o:false}" class="relative">
                     <button @click="o=!o" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</button>
                     <div x-show="o" x-cloak @click.outside="o=false" class="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 text-sm text-ink shadow-xl">
@@ -47,6 +48,7 @@
                 <a href="{{ route('login') }}" class="rounded-lg px-3 py-2 text-sm font-bold hover:bg-white/10">Masuk</a>
                 <a href="{{ route('login', ['tab' => 'register']) }}" class="rounded-lg bg-brand px-3 py-2 text-sm font-bold">Daftar</a>
             @endauth
+            </div>
         </div>
     </div>
     <div class="border-b border-sand bg-white/90 backdrop-blur">

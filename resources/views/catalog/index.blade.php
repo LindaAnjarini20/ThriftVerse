@@ -17,8 +17,10 @@
   <a href="{{ route('home', ['max_price' => 500000]) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Under Rp500k</a>
   <a href="{{ route('home', ['sort' => 'turun']) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Drop Hari Ini</a>
 </div>
-<div class="grid gap-6 lg:grid-cols-[260px_1fr]">
-  <form method="GET" class="card h-fit space-y-5 p-5 text-sm">
+<div class="grid gap-6 lg:grid-cols-[260px_1fr]" x-data="{ f: false }">
+  <div>
+  <button type="button" @click="f = !f" class="btn btn-soft mb-3 w-full lg:hidden"><span x-text="f ? 'Tutup filter' : 'Filter & urutkan ({{ $listings->total() }} barang)'"></span></button>
+  <form method="GET" class="card hidden h-fit space-y-5 p-5 text-sm lg:block" :class="f ? '!block' : ''">
     <input type="hidden" name="q" value="{{ request('q') }}">
     <div class="flex items-center justify-between"><h2 class="text-lg font-extrabold">Filter Pintar</h2><a href="{{ route('home') }}" class="mono text-[10px] font-bold text-indigoX">RESET SEMUA</a></div>
     <div><div class="mono mb-2 text-[11px] font-bold uppercase text-ink/50">Mode Transaksi</div>
@@ -38,6 +40,7 @@
       <div class="mt-2 flex gap-2">@foreach([5,10,15,25] as $r)<label class="flex-1"><input type="radio" name="radius" value="{{ $r }}" @checked((int) request('radius', 10)===$r) class="peer sr-only"><span class="block cursor-pointer rounded-lg bg-sand py-1.5 text-center text-xs font-bold peer-checked:bg-brand peer-checked:text-white">{{ $r }} km</span></label>@endforeach</div></div>
     <button class="btn btn-brand w-full !py-3">TERAPKAN FILTER ({{ $listings->total() }})</button>
   </form>
+  </div>
 
   <section>
     <form method="GET" class="card mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">

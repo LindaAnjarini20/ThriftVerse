@@ -80,6 +80,8 @@ class DatabaseSeeder extends Seeder
             Bid::create(['listing_id' => $nike->id, 'buyer_id' => $b->id, 'proposer_id' => $b->id, 'amount' => $amt, 'delivery_method' => $m, 'message' => $msg, 'round' => 1, 'expires_at' => now()->addHours(20)]);
         }
 
+        \App\Support\SeedPhotos::apply();
+
         // Data demo fitur baru: voucher, auto price drop, dan chat
         \App\Models\Voucher::create(['code' => 'THRIFT10', 'description' => 'Diskon 10% (maks. Rp50.000)', 'type' => 'percent', 'value' => 10, 'min_spend' => 100000, 'max_discount' => 50000, 'is_active' => true]);
         \App\Models\Voucher::create(['code' => 'HEMAT25K', 'description' => 'Potongan Rp25.000 min. belanja Rp200.000', 'type' => 'fixed', 'value' => 25000, 'min_spend' => 200000, 'is_active' => true]);
