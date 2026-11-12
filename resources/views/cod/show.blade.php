@@ -21,7 +21,10 @@
         <details class="mt-3 rounded-xl bg-sand p-3 text-sm"><summary class="cursor-pointer font-bold">Usulkan titik temu / waktu lain</summary>
           <form method="POST" action="{{ route('cod.propose', $s) }}" class="mt-3 grid gap-2 sm:grid-cols-2">@csrf
             <select name="meeting_point_id" class="field">@foreach($points as $p)<option value="{{ $p->id }}" @selected($s->meeting_point_id===$p->id)>{{ $p->name }}</option>@endforeach</select>
-            <input type="datetime-local" name="scheduled_at" required class="field"><button class="btn btn-indigo sm:col-span-2">Kirim usulan</button></form></details>
+            <input type="datetime-local" name="scheduled_at" required class="field">
+            <div class="sm:col-span-2">@include('partials.meeting-map', ['points' => $points, 'sync' => true, 'height' => 260, 'selected' => $s->meeting_point_id,
+              'circle' => $tx->listing->cod_latitude ? ['lat' => (float) $tx->listing->cod_latitude, 'lng' => (float) $tx->listing->cod_longitude, 'km' => (int) ($tx->listing->cod_radius_km ?: 10)] : null])</div>
+            <button class="btn btn-indigo sm:col-span-2">Kirim usulan</button></form></details>
       @endif</div>
 
     @if($active && $s->status==='confirmed')

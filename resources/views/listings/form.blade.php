@@ -50,6 +50,28 @@
       <p class="text-xs text-ink/60">Format JPG/PNG/WebP, maks. 5 MB per foto.</p></section>
     @endunless
 
+    @if($edit)
+    <section class="space-y-3"><h2 class="mono text-[11px] font-bold uppercase text-ink/50">03. Foto listing (ganti sebagian)</h2>
+      <p class="text-xs text-ink/60">Pilih file hanya pada foto yang ingin diganti. Foto lainnya tetap dipakai. Format JPG/PNG/WebP, maks. 5 MB per foto.</p>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        @foreach(['photo_front' => 'Tampak depan', 'photo_back' => 'Tampak belakang', 'photo_label' => 'Label / wash tag', 'photo_detail' => 'Detail bahan'] as $n => $lab)
+        @php $cur = ($listing->images ?? [])[$loop->index] ?? null; @endphp
+        <div class="rounded-xl bg-sand p-3 text-sm"><div class="font-bold">{{ $lab }}</div>
+          <div class="aspect-square mt-2 overflow-hidden rounded-lg bg-white">@if($cur)<img src="{{ $listing->url($cur) }}" class="h-full w-full object-cover" alt="{{ $lab }}">@else<div class="flex h-full items-center justify-center text-xs text-ink/40">Belum ada foto</div>@endif</div>
+          <input type="file" name="{{ $n }}" accept="image/*" class="field mt-2 text-xs" onchange="var f=this.files[0]; if(f){ var c=this.closest('.rounded-xl'), b=c.querySelector('.aspect-square'), i=b.querySelector('img'); if(!i){ b.innerHTML=''; i=document.createElement('img'); i.className='h-full w-full object-cover'; b.appendChild(i); } i.src=URL.createObjectURL(f); }">
+        </div>
+        @endforeach
+      </div>
+      @php $minusCur = $listing->minus_photos ?? []; @endphp
+      @if($listing->condition_grade !== 'A' || count($minusCur))
+      <div class="rounded-xl border-2 border-dashed border-clay/50 bg-clay/5 p-4"><div class="mono mb-2 text-[11px] font-bold uppercase text-clay">Foto detail minus</div>
+        @if(count($minusCur))<div class="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-6">@foreach($minusCur as $m)<label class="block text-center text-xs"><img src="{{ $listing->url($m) }}" class="aspect-square w-full rounded-lg object-cover" alt="foto minus"><span class="mt-1 flex items-center justify-center gap-1"><input type="checkbox" name="remove_minus[]" value="{{ $m }}" class="rounded text-red-600"> hapus</span></label>@endforeach</div>@endif
+        <input type="file" name="minus_photos[]" accept="image/*" multiple class="field">
+        <p class="mt-1 text-xs text-ink/60">Centang "hapus" untuk membuang foto, atau pilih file baru untuk menambah (maks. 6 total).@if($listing->condition_grade !== 'A') Grade {{ $listing->condition_grade }} wajib punya minimal 1 foto minus.@endif</p></div>
+      @endif
+    </section>
+    @endif
+
     <section class="space-y-3"><h2 class="mono text-[11px] font-bold uppercase text-ink/50">04. Protokol & opsi transaksi fleksibel</h2>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label class="rounded-xl bg-sand p-3 text-sm"><input type="checkbox" name="harga_tetap" value="1" x-model="tetap" class="mr-1 rounded text-brand"><b>Harga Tetap</b><br><span class="text-xs text-ink/60">Beli langsung tanpa nego.</span></label>
@@ -59,7 +81,13 @@
       <div x-show="barter" x-cloak><label class="text-sm font-bold">Preferensi barang yang diinginkan</label><input name="barter_preference" value="{{ $ov('barter_preference') }}" class="field mt-1" placeholder="Kategori, ukuran, grade minimal"></div>
       <div x-show="cod" x-cloak class="grid gap-3 sm:grid-cols-2"><div><label class="text-sm font-bold">Titik temu COD</label><select name="meeting_point_id" class="field mt-1"><option value="">— pilih —</option>@foreach($points as $p)<option value="{{ $p->id }}" @selected(old('meeting_point_id', $listing?->cod_location ? $points->firstWhere('name', $listing->cod_location)?->id : null)==$p->id)>{{ $p->name }}</option>@endforeach</select></div>
         <div><label class="text-sm font-bold">Radius COD</label><select name="cod_radius_km" class="field mt-1">@foreach([5,10,15,25] as $r)<option value="{{ $r }}" @selected(($ov('cod_radius_km',10))==$r)>{{ $r }} km</option>@endforeach</select></div></div>
-      <div x-show="cod" x-cloak>@include('partials.meeting-map', ['points' => $points, 'sync' => true, 'height' => 260, 'selected' => old('meeting_point_id', $listing?->cod_location ? $points->firstWhere('name', $listing->cod_location)?->id : null)])</div>
+      <div x-show="cod" x-cloak>
+        @php
+          $presetHit = $listing?->cod_location ? $points->firstWhere('name', $listing->cod_location) : null;
+          $customInit = ($listing && $listing->bisa_cod && $listing->cod_latitude && ! $presetHit) ? ['lat' => (float) $listing->cod_latitude, 'lng' => (float) $listing->cod_longitude, 'name' => $listing->cod_location] : null;
+        @endphp
+        @include('partials.meeting-map', ['points' => $points, 'sync' => true, 'height' => 300, 'selected' => old('meeting_point_id', $presetHit?->id), 'customInit' => $customInit])
+      </div>
       <div class="rounded-xl bg-sand p-4"><label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" name="auto_drop" value="1" x-model="drop" class="rounded text-brand"> Turunkan harga otomatis (auto price drop)</label>
         <div x-show="drop" x-cloak class="mt-3 grid gap-3 sm:grid-cols-3">
           <div><label class="text-xs font-bold">Turun setiap</label><select name="drop_every_days" class="field mt-1">@foreach([3,7,14] as $d)<option value="{{ $d }}" @selected((int) $ov('drop_every_days', 7) === $d)>{{ $d }} hari</option>@endforeach</select></div>

@@ -63,7 +63,7 @@ class ThriftVerseFlowTest extends TestCase
         // minimal satu opsi transaksi
         $none = array_merge($base, ['title' => 'Tanpa opsi', 'photo_front' => $img('a'), 'photo_back' => $img('b'), 'photo_label' => $img('c'), 'photo_detail' => $img('d')]);
         unset($none['harga_tetap']);
-        $this->post('/jual', $none)->assertStatus(422);
+        $this->post('/jual', $none)->assertSessionHasErrors('opsi'); // pesan tampil di formulir (bukan halaman error 422)
     }
 
     public function test_bid_validation_accept_closes_others_and_creates_hold(): void

@@ -20,9 +20,8 @@
       <button type="button" @click="tab='login'" :class="tab==='login' ? 'bg-white shadow' : 'text-ink/60'" class="rounded-lg py-2.5">Masuk (Login)</button>
       <button type="button" @click="tab='register'" :class="tab==='register' ? 'bg-white shadow' : 'text-ink/60'" class="rounded-lg py-2.5">Daftar Akun Baru</button>
     </div>
-    <div class="mb-5 grid grid-cols-2 gap-3 text-sm font-bold">
-      <button type="button" disabled title="Login sosial (FR-003) belum diaktifkan" class="btn btn-soft cursor-not-allowed opacity-60">Google · segera</button>
-      <button type="button" disabled title="Belum diaktifkan" class="btn btn-soft cursor-not-allowed opacity-60">Apple · segera</button>
+    <div class="mb-5 text-sm font-bold">
+      @if(config('google.client_id'))<a href="{{ route('auth.google') }}" class="btn btn-soft w-full !py-3">Lanjutkan dengan Google</a>@else<button type="button" disabled title="Login Google belum dikonfigurasi" class="btn btn-soft w-full cursor-not-allowed !py-3 opacity-60">Lanjutkan dengan Google · belum dikonfigurasi</button>@endif
     </div>
     @if($errors->any())<div class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">@foreach($errors->all() as $e)<div>{{ $e }}</div>@endforeach</div>@endif
     @if(session('success'))<div class="mb-4 rounded-xl bg-brand-light px-4 py-3 text-sm font-semibold text-brand-dark">{{ session('success') }}</div>@endif

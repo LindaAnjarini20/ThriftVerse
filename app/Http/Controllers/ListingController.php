@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 use App\Models\{Bid, CartItem, Listing, MeetingPoint, PriceDropHistory, Report, Wishlist};
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ListingController extends Controller
 {
+    private const PHOTO_FIELDS = ['photo_front', 'photo_back', 'photo_label', 'photo_detail'];
+
     public function mine()
     {
         $listings = Listing::where('seller_id', auth()->id())->withCount('bids')->latest()->paginate(12);
@@ -82,12 +86,44 @@ class ListingController extends Controller
     public function update(Request $request, Listing $listing)
     {
         $this->own($listing);
-        $data = $request->validate(array_merge($this->commonRules(), ['status' => 'required|in:active,draft,archived']));
+        $img = 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120';
+        $data = $request->validate(array_merge($this->commonRules(), [
+            'status' => 'required|in:active,draft,archived',
+            'photo_front' => $img, 'photo_back' => $img, 'photo_label' => $img, 'photo_detail' => $img,
+            'minus_photos' => 'nullable|array|max:6', 'minus_photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'remove_minus' => 'nullable|array', 'remove_minus.*' => 'string|max:255',
+        ]));
         $this->assertOptions($request);
-        abort_if($listing->status === 'reserved', 422, 'Listing sedang ditahan untuk transaksi.');
+        if ($listing->status === 'reserved') {
+            $this->fail('status', 'Listing sedang ditahan untuk transaksi, jadi belum bisa diubah. Coba lagi setelah transaksinya selesai atau dibatalkan.');
+        }
+
+        // Foto minus: periksa dulu sebelum ada file yang disimpan atau dihapus.
+        $minus = array_values($listing->minus_photos ?? []);
+        $remove = array_values(array_intersect((array) $request->input('remove_minus', []), $minus));
+        $newMinus = collect($request->file('minus_photos', []))->filter()->values();
+        $remaining = count($minus) - count($remove) + $newMinus->count();
+        if ($listing->condition_grade !== 'A' && $remaining < 1) {
+            $this->fail('minus_photos', "Listing Grade {$listing->condition_grade} wajib punya minimal 1 foto detail minus.");
+        }
+        if ($remaining > 6) $this->fail('minus_photos', 'Maksimal 6 foto detail minus.');
+
+        // Foto utama: hanya slot yang diisi file baru yang diganti, sisanya tetap.
+        $images = array_values($listing->images ?? []);
+        foreach (self::PHOTO_FIELDS as $i => $f) {
+            if ($request->hasFile($f)) {
+                $oldPath = $images[$i] ?? null;
+                $images[$i] = $request->file($f)->store('listings', 'public');
+                $this->discard($oldPath);
+            }
+        }
+        ksort($images);
+        foreach ($remove as $rm) $this->discard($rm);
+        $keepMinus = array_values(array_diff($minus, $remove));
+        foreach ($newMinus as $file) $keepMinus[] = $file->store('listings/minus', 'public');
 
         $old = $listing->current_price;
-        $payload = $this->payload($request, $data) + ['status' => $data['status']];
+        $payload = $this->payload($request, $data) + ['status' => $data['status'], 'images' => array_values($images), 'minus_photos' => $keepMinus];
         if ($payload['auto_drop'] && ! $listing->auto_drop) $payload['last_drop_at'] = now();
         $listing->update($payload);
 
@@ -104,7 +140,7 @@ class ListingController extends Controller
     public function destroy(Listing $listing)
     {
         $this->own($listing);
-        abort_if($listing->status === 'reserved', 422, 'Listing sedang ditahan untuk transaksi.');
+        if ($listing->status === 'reserved') return back()->with('error', 'Listing sedang ditahan untuk transaksi, jadi belum bisa dihapus.');
         $listing->update(['status' => 'archived']);
         $listing->delete();
         return redirect()->route('listings.mine')->with('success', 'Listing dihapus.');
@@ -132,15 +168,30 @@ class ListingController extends Controller
 
     private function assertOptions(Request $r): void
     {
-        abort_unless($r->boolean('harga_tetap') || $r->boolean('bisa_tawar') || $r->boolean('terbuka_barter') || $r->boolean('bisa_cod'), 422, 'Pilih minimal satu opsi transaksi.');
-        abort_if($r->boolean('bisa_cod') && ! $r->filled('meeting_point_id'), 422, 'Pilih titik temu COD.');
+        if (! ($r->boolean('harga_tetap') || $r->boolean('bisa_tawar') || $r->boolean('terbuka_barter') || $r->boolean('bisa_cod'))) {
+            $this->fail('opsi', 'Pilih minimal satu opsi transaksi (harga tetap, nego, barter, atau COD).');
+        }
+        if ($r->boolean('bisa_cod') && ! $r->filled('meeting_point_id')) {
+            $this->fail('meeting_point_id', 'Pilih titik temu COD: pilih Safe Meeting Point, gunakan lokasi Anda, atau klik titik di peta.');
+        }
+    }
+
+    /** Pesan kesalahan ditampilkan di formulir (bukan halaman error 422 yang pesannya tersembunyi). */
+    private function fail(string $field, string $message): never
+    {
+        throw ValidationException::withMessages([$field => [$message]]);
+    }
+
+    private function discard(?string $path): void
+    {
+        if ($path && ! str_starts_with($path, 'seed/') && ! preg_match('~^https?://~i', $path)) Storage::disk('public')->delete($path);
     }
 
     private function payload(Request $r, array $d): array
     {
         $p = collect($d)->only(['title', 'category', 'brand', 'size', 'color', 'material', 'description', 'current_price', 'secret_min_price', 'barter_preference'])->all();
         $p += ['harga_tetap' => $r->boolean('harga_tetap'), 'bisa_tawar' => $r->boolean('bisa_tawar'), 'terbuka_barter' => $r->boolean('terbuka_barter'), 'bisa_cod' => $r->boolean('bisa_cod')];
-        $p['secret_min_price'] = $p['bisa_tawar'] ? ($p['secret_min_price'] ?? null) : null;
+        $p['secret_min_price'] = ($p['bisa_tawar'] && ($p['secret_min_price'] ?? '') !== '') ? $p['secret_min_price'] : null;
         $drop = $r->boolean('auto_drop');
         $p += ['auto_drop' => $drop, 'drop_percent' => (int) $r->input('drop_percent', 5), 'drop_every_days' => (int) $r->input('drop_every_days', 7), 'floor_price' => $drop ? $r->input('floor_price') : null];
         if ($p['bisa_cod'] && ($mp = MeetingPoint::find($r->meeting_point_id))) {

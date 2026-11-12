@@ -3,7 +3,7 @@ namespace App\Providers;
 
 use App\Models\{Bid, CartItem, Message};
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,8 +13,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (config('app.env') === 'production' || env('RAILWAY_ENVIRONMENT')) {
-            URL::forceScheme('https');
+        // Titik temu kustom: middleware ini mengisi meeting_point_id dari koordinat yang dipilih di peta.
+        $this->app['router']->pushMiddlewareToGroup('web', \App\Http\Middleware\ResolveCustomMeetingPoint::class);
+
+        // Rute tambahan (login Google) di routes/extra.php, tanpa mengubah routes/web.php.
+        if (! $this->app->routesAreCached()) {
+            $this->app->booted(fn () => Route::middleware('web')->group(base_path('routes/extra.php')));
         }
 
         Blade::directive('rp', fn ($e) => "<?php echo 'Rp'.number_format((float)($e), 0, ',', '.'); ?>");
