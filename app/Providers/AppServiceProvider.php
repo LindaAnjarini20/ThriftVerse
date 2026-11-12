@@ -3,7 +3,9 @@ namespace App\Providers;
 
 use App\Models\{Bid, CartItem, Message};
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,6 +15,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Di balik proxy HTTPS (Railway) aplikasi menerima permintaan sebagai http. Paksa https agar alamat formulir,
+        // pengalihan, dan aset tidak berawalan http:// (Chrome memperingatkan "form is not secure").
+        if ($this->app->environment('production') || str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+            Request::setTrustedProxies(['*'], Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO);
+        }
+
         // Titik temu kustom: middleware ini mengisi meeting_point_id dari koordinat yang dipilih di peta.
         $this->app['router']->pushMiddlewareToGroup('web', \App\Http\Middleware\ResolveCustomMeetingPoint::class);
 
