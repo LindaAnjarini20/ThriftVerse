@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="ThriftVerse">
+  <rect width="512" height="512" rx="116" fill="#006B4A"/>
+  <g transform="translate(256 262) scale(1.12) translate(-256 -290)">
+    <polygon points="256,238 420,382 92,382" fill="#fff" stroke="#fff" stroke-width="28" stroke-linejoin="round"/>
+    <path d="M256 242V206A32 32 0 0 1 320 206V224" fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M212 298H300V326H270V364H242V326H212Z" fill="#006B4A"/>
+  </g>
+  <polygon points="398.0,90.0 405.8,120.2 436.0,128.0 405.8,135.8 398.0,166.0 390.2,135.8 360.0,128.0 390.2,120.2" fill="#FBBF24"/>
+  <circle cx="116" cy="150" r="9" fill="#FBBF24"/>
+</svg>

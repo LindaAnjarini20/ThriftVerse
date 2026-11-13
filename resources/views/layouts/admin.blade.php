@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title','Admin') · ThriftVerse Admin</title>@include('partials.assets')</head>
+<meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title','Admin') · ThriftVerse Admin</title>@include('partials.assets')<link rel="icon" type="image/svg+xml" href="/images/logo/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/images/logo/favicon-32.png"><link rel="alternate icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/images/logo/apple-touch-icon.png"><meta name="theme-color" content="#006B4A"></head>
 <body class="bg-cream font-sans text-ink antialiased">
 @php $a = fn($r) => request()->routeIs($r) ? 'bg-brand text-white' : 'text-white/75 hover:bg-white/10'; @endphp
 <div class="flex min-h-screen">
   <aside class="hidden w-60 shrink-0 bg-dark p-4 text-white md:block">
-    <a href="{{ route('admin.dashboard') }}" class="mb-1 flex items-center gap-2"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand font-extrabold">T</span>
+    <a href="{{ route('admin.dashboard') }}" class="mb-1 flex items-center gap-2"><img src="/images/logo/logo-mark.svg" alt="ThriftVerse" width="36" height="36" class="h-9 w-9 shrink-0">
       <div><div class="font-extrabold leading-tight">ThriftVerse</div><div class="mono text-[9px] text-white/60">SUPER ADMIN & KURATOR</div></div></a>
     <nav class="mt-6 space-y-1 text-sm font-bold">
       <a href="{{ route('admin.dashboard') }}" class="block rounded-lg px-3 py-2.5 {{ $a('admin.dashboard') }}">✔ Verifikasi & Kurasi</a>

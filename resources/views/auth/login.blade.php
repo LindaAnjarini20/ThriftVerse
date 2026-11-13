@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Masuk · ThriftVerse</title>@include('partials.assets')</head>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Masuk · ThriftVerse</title>@include('partials.assets')<link rel="icon" type="image/svg+xml" href="/images/logo/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/images/logo/favicon-32.png"><link rel="alternate icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/images/logo/apple-touch-icon.png"><meta name="theme-color" content="#006B4A"></head>
 <body class="flex min-h-screen items-center justify-center bg-cream p-4 font-sans text-ink antialiased">
 <div x-data="{tab:'{{ $tab === 'register' ? 'register' : 'login' }}'}" class="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl md:grid-cols-[1fr_1.1fr]">
   <div class="hidden flex-col justify-between bg-[#F0E6DF] p-10 md:flex">
     <div>
       <span class="mono inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase text-brand">🛡 Safe Escrow & Authenticated Preloved</span>
-      <h1 class="mt-6 text-4xl font-extrabold tracking-tight">ThriftVerse</h1>
+      <img src="/images/logo/logo-mark.svg" alt="" width="72" height="72" class="mt-6 h-[72px] w-[72px]">
+      <h1 class="mt-4 text-4xl font-extrabold tracking-tight">ThriftVerse</h1>
       <p class="mt-2 text-ink/75">Pusat kurasi streetwear bekas, rilisan arsip langka, dan transaksi peer-to-peer terjamin di Indonesia.</p>
       <div class="mt-8 space-y-3 text-sm">
         <div class="rounded-xl bg-white p-4"><b>1 Akun Multi-Peran</b><br><span class="text-ink/70">Beli, tawar harga ala inDrive, hingga barter koleksi tanpa akun ganda.</span></div>
@@ -16,6 +17,7 @@
     <div class="mono mt-8 flex justify-between text-[10px] font-bold uppercase text-ink/60"><span>🔒 Kata sandi di-hash</span><span>Rekber · COD · Barter</span></div>
   </div>
   <div class="p-6 sm:p-10">
+    <div class="mb-5 flex items-center gap-3 md:hidden"><img src="/images/logo/logo-mark.svg" alt="" width="44" height="44" class="h-11 w-11"><div><div class="text-xl font-extrabold leading-tight">ThriftVerse</div><div class="mono text-[10px] uppercase text-ink/60">Preloved & vintage terverifikasi</div></div></div>
     <div class="mb-6 grid grid-cols-2 rounded-xl bg-sand p-1 text-sm font-bold">
       <button type="button" @click="tab='login'" :class="tab==='login' ? 'bg-white shadow' : 'text-ink/60'" class="rounded-lg py-2.5">Masuk (Login)</button>
       <button type="button" @click="tab='register'" :class="tab==='register' ? 'bg-white shadow' : 'text-ink/60'" class="rounded-lg py-2.5">Daftar Akun Baru</button>

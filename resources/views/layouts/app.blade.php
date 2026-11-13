@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'ThriftVerse') · ThriftVerse</title>
     @include('partials.assets')
+    <link rel="icon" type="image/svg+xml" href="/images/logo/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/images/logo/favicon-32.png"><link rel="alternate icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/images/logo/apple-touch-icon.png"><meta name="theme-color" content="#006B4A">
     @stack('head')
     <style>body{overflow-x:hidden}img,svg,video{max-width:100%}.card{overflow-wrap:anywhere}</style>
 </head>
@@ -15,7 +16,7 @@
     <div class="bg-dark text-white">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
             <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-lg font-extrabold">T</span>
+                <img src="/images/logo/logo-mark.svg" alt="ThriftVerse" width="40" height="40" class="h-9 w-9 shrink-0 sm:h-10 sm:w-10">
                 <span class="hidden text-lg font-extrabold tracking-tight sm:block">THRIFTVERSE</span>
             </a>
             <form action="{{ route('home') }}" method="GET" class="order-last flex w-full items-center overflow-hidden rounded-xl bg-white text-ink ring-2 ring-brand/60 sm:order-none sm:mx-2 sm:w-auto sm:flex-1">
@@ -77,7 +78,7 @@
 
 <footer class="mt-12 border-t border-sand bg-white">
     <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-        <div><div class="flex items-center gap-2 text-lg font-extrabold"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">T</span>THRIFTVERSE</div>
+        <div><div class="flex items-center gap-2 text-lg font-extrabold"><img src="/images/logo/logo-mark.svg" alt="" width="32" height="32" class="h-8 w-8">THRIFTVERSE</div>
             <p class="mt-3 text-ink/70">Marketplace preloved dengan grading kondisi terstandar, tawar harga ala inDrive, barter, dan COD gratis ongkir.</p></div>
         <div><div class="mono mb-2 text-[11px] font-bold uppercase text-ink/50">Fitur Transaksi</div><ul class="space-y-1 text-ink/80"><li>Tawar Harga Fair-Pricing</li><li>Barter & Tukar Tambah</li><li>COD Titik Temu Aman</li><li>Rekber (Escrow)</li></ul></div>
         <div><div class="mono mb-2 text-[11px] font-bold uppercase text-ink/50">Bantuan</div><ul class="space-y-1 text-ink/80"><li>Standar Grading Kondisi (A/B/C)</li><li>Panduan Titik Temu Publik</li><li>Pusat Resolusi Masalah</li></ul></div>
