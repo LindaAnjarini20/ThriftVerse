@@ -21,7 +21,7 @@
   @if($mineTurn)
   <form method="POST" action="{{ route('barters.respond', $barter) }}" class="card space-y-3 p-5" x-data="{c:false}">@csrf
     <div class="text-sm font-bold">Respons Anda</div>
-    <div class="grid grid-cols-3 gap-2"><button name="action" value="approve" class="btn btn-brand">Setuju</button><button type="button" @click="c=!c" class="btn btn-indigo">Ajukan Balik</button><button name="action" value="reject" class="btn btn-soft">Tolak</button></div>
+    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3"><button name="action" value="approve" class="btn btn-brand">Setuju</button><button type="button" @click="c=!c" class="btn btn-indigo">Ajukan Balik</button><button name="action" value="reject" class="btn btn-soft">Tolak</button></div>
     <div x-show="c" x-cloak class="grid gap-2 sm:grid-cols-3"><input type="number" min="0" name="cash_top_up" value="{{ (int) $barter->cash_top_up }}" class="field"><select name="top_up_payer" class="field"><option value="offerer">Pengaju membayar</option><option value="owner">Pemilik membayar</option></select><button name="action" value="counter" class="btn btn-indigo">Kirim balik</button></div>
   </form>
   @elseif($barter->status==='pending')

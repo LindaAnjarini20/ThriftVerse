@@ -7,6 +7,7 @@
     <title>@yield('title', 'ThriftVerse') · ThriftVerse</title>
     @include('partials.assets')
     @stack('head')
+    <style>body{overflow-x:hidden}img,svg,video{max-width:100%}.card{overflow-wrap:anywhere}</style>
 </head>
 <body class="min-h-screen bg-cream font-sans text-ink antialiased">
 @php $nav = fn($r) => request()->routeIs($r) ? 'bg-brand text-white' : 'text-ink/80 hover:bg-sand'; @endphp
@@ -34,10 +35,14 @@
                 <a href="{{ route('cart.index') }}" class="relative rounded-lg p-2 hover:bg-white/10" title="Keranjang">🛒
                     @if($cartCount)<span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold">{{ $cartCount }}</span>@endif</a>
                 <a href="{{ route('orders.index') }}" class="hidden rounded-lg p-2 hover:bg-white/10 sm:block" title="Pesanan Saya">🛍️</a>
-                <div x-data="{o:false}" class="relative">
-                    <button @click="o=!o" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</button>
-                    <div x-show="o" x-cloak @click.outside="o=false" class="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 text-sm text-ink shadow-xl">
-                        <div class="px-3 py-2"><div class="font-bold">{{ auth()->user()->name }}</div><div class="mono text-[11px] text-ink/60">Skor kepercayaan {{ auth()->user()->trust_score }}</div></div>
+                <div x-data="{o:false}" @keydown.escape.window="o=false" class="relative">
+                    <button @click="o=!o" aria-label="Menu akun" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</button>
+                    <div x-show="o" x-cloak @click.outside="o=false" class="absolute right-0 z-50 mt-2 max-h-[80vh] w-60 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl bg-white p-2 text-sm text-ink shadow-xl ring-1 ring-black/5">
+                        <div class="px-3 py-2"><div class="break-words font-bold">{{ auth()->user()->name }}</div><div class="mono text-[11px] text-ink/60">Skor kepercayaan {{ auth()->user()->trust_score }}</div></div>
+                        <div class="mb-1 grid grid-cols-2 gap-1 border-b border-sand pb-2 md:hidden">
+                            <a class="rounded-lg px-2 py-2 text-center text-xs font-bold {{ request()->routeIs('listings.mine','listings.create','listings.edit') ? 'bg-sand' : 'bg-brand text-white' }}" href="{{ route('home') }}">Mode Pembeli</a>
+                            <a class="rounded-lg px-2 py-2 text-center text-xs font-bold {{ request()->routeIs('listings.mine','listings.create','listings.edit') ? 'bg-brand text-white' : 'bg-sand' }}" href="{{ route('listings.mine') }}">Mode Penjual</a>
+                        </div>
                         <a class="block rounded-lg px-3 py-2 hover:bg-sand" href="{{ route('profile.edit') }}">Profil & Pengaturan</a>
                         <a class="block rounded-lg px-3 py-2 hover:bg-sand" href="{{ route('listings.create') }}">Jual barang</a>
                         @if(auth()->user()->isAdmin())<a class="block rounded-lg px-3 py-2 hover:bg-sand" href="{{ route('admin.dashboard') }}">Portal Admin</a>@endif
