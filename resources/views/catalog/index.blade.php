@@ -50,7 +50,7 @@
         <select name="sort" onchange="this.form.submit()" class="rounded-lg bg-sand px-3 py-1.5 text-sm font-bold">
           @foreach(['populer' => 'Paling Populer & Trending', 'terbaru' => 'Terbaru', 'harga_asc' => 'Harga Terendah', 'harga_desc' => 'Harga Tertinggi', 'grade' => 'Grade Terbaik', 'turun' => 'Turun Harga Terbaru'] as $k => $lab)<option value="{{ $k }}" @selected(request('sort','populer')===$k)>{{ $lab }}</option>@endforeach</select></label>
     </form>
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
       @forelse($listings as $l)<div class="relative">@include('partials.listing-card', ['l' => $l, 'wished' => $wished])</div>
       @empty<div class="card col-span-full p-10 text-center text-ink/60">Belum ada barang yang cocok dengan filter.</div>@endforelse
     </div>

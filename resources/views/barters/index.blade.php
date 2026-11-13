@@ -10,5 +10,5 @@
     <span class="mono rounded px-2 py-1 font-bold uppercase {{ $b->status==='pending' ? 'bg-clay/10 text-clay' : ($b->status==='accepted'||$b->status==='completed' ? 'bg-brand-light text-brand' : 'bg-sand') }}">{{ $b->status }}</span></div></a>
 @empty<div class="p-8 text-center text-sm text-ink/60">Belum ada barter.</div>@endforelse</div>
 <h2 class="mb-2 font-extrabold">Listing terbuka barter</h2>
-<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">@foreach($open as $l)<div class="relative">@include('partials.listing-card', ['l' => $l, 'wished' => []])</div>@endforeach</div>
+<div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">@foreach($open as $l)<div class="relative">@include('partials.listing-card', ['l' => $l, 'wished' => []])</div>@endforeach</div>
 @endsection
