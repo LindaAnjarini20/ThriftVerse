@@ -9,13 +9,21 @@
     <div><div class="mono text-[10px] uppercase text-ink/50">Live bidding</div><div class="text-lg font-extrabold text-indigoX">{{ $stats['live_bids'] }} Aktif</div></div>
     <div><div class="mono text-[10px] uppercase text-ink/50">Safe hub</div><div class="text-lg font-extrabold">{{ $stats['hubs'] }} Titik</div></div></div>
 </div>
-<div class="mb-5 flex flex-wrap gap-2 text-xs font-bold">
-  <a href="{{ route('home') }}" class="rounded-full bg-dark px-4 py-2 text-white">Semua</a>
-  <a href="{{ route('home', ['mode' => ['tawar']]) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Bisa Nego inDrive</a>
-  <a href="{{ route('home', ['mode' => ['barter']]) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Terbuka Barter</a>
-  <a href="{{ route('home', ['grade' => ['A']]) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Grade A Mulus</a>
-  <a href="{{ route('home', ['max_price' => 500000]) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Under Rp500k</a>
-  <a href="{{ route('home', ['sort' => 'turun']) }}" class="rounded-full bg-white px-4 py-2 shadow-sm">Drop Hari Ini</a>
+@php
+  $qm = (array) request('mode'); $qg = (array) request('grade');
+  $chips = [
+    ['Semua', route('home'), ! $qm && ! $qg && ! request()->filled('max_price') && request('sort') !== 'turun'],
+    ['Bisa Nego inDrive', route('home', ['mode' => ['tawar']]), in_array('tawar', $qm, true)],
+    ['Terbuka Barter', route('home', ['mode' => ['barter']]), in_array('barter', $qm, true)],
+    ['Grade A Mulus', route('home', ['grade' => ['A']]), in_array('A', $qg, true)],
+    ['Under Rp500k', route('home', ['max_price' => 500000]), request()->filled('max_price') && (float) request('max_price') === 500000.0],
+    ['Drop Hari Ini', route('home', ['sort' => 'turun']), request('sort') === 'turun'],
+  ];
+@endphp
+<div data-tabs data-on="bg-dark text-white" data-off="bg-white shadow-sm hover:bg-sand" class="no-scrollbar -mx-4 mb-5 flex gap-3 overflow-x-auto px-4 pb-1 text-sm font-bold sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+  @foreach($chips as [$label, $url, $on])
+    <a href="{{ $url }}" data-tab @if($on) aria-current="page" @endif class="shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 transition {{ $on ? 'bg-dark text-white' : 'bg-white shadow-sm hover:bg-sand' }}">{{ $label }}</a>
+  @endforeach
 </div>
 <div class="grid gap-6 lg:grid-cols-[260px_1fr]" x-data="{ f: false }">
   <div>

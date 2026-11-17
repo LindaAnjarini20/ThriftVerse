@@ -8,7 +8,11 @@
     @include('partials.assets')
     <link rel="icon" type="image/svg+xml" href="/images/logo/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/images/logo/favicon-32.png"><link rel="alternate icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/images/logo/apple-touch-icon.png"><meta name="theme-color" content="#006B4A">
     @stack('head')
-    <style>body{overflow-x:hidden}img,svg,video{max-width:100%}.card{overflow-wrap:anywhere}</style>
+    <style>body{overflow-x:hidden}img,svg,video{max-width:100%}.card{overflow-wrap:anywhere}
+    .no-scrollbar{scrollbar-width:none;-ms-overflow-style:none}.no-scrollbar::-webkit-scrollbar{display:none}
+    #navbar{position:fixed;top:0;left:0;z-index:9999;height:3px;width:0;background:#4ECB96;opacity:0;pointer-events:none;transition:width .5s ease,opacity .2s}#navbar.on{opacity:1}</style>
+    {{-- Muat lebih awal halaman yang kemungkinan dibuka berikutnya (Chrome): hanya tautan menu/filter bertanda data-tab. --}}
+    <script type="speculationrules">{"prefetch":[{"source":"document","where":{"selector_matches":"[data-tab]"},"eagerness":"moderate"}]}</script>
 </head>
 <body class="min-h-screen bg-cream font-sans text-ink antialiased">
 @php $nav = fn($r) => request()->routeIs($r) ? 'bg-brand text-white' : 'text-ink/80 hover:bg-sand'; @endphp
@@ -58,14 +62,14 @@
         </div>
     </div>
     <div class="border-b border-sand bg-white/90 backdrop-blur">
-        <nav class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2 text-sm font-bold sm:px-6">
-            <a href="{{ route('home') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('home') }}">Jelajah Katalog</a>
-            <a href="{{ route('negotiations.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('negotiations.*') }}">Negosiasi & Tawar @if($awaitingBids)<span class="ml-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">{{ $awaitingBids }}</span>@endif</a>
-            <a href="{{ route('barters.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('barters.*') }}">Barter Hub</a>
-            <a href="{{ route('cod.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('cod.*') }}">Jadwal COD</a>
-            <a href="{{ route('orders.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('orders.*') }}">Pesanan Saya</a>
-            @auth<a href="{{ route('chat.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('chat.*') }}">Chat @if($chatUnread)<span class="ml-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">{{ $chatUnread }}</span>@endif</a>
-            <a href="{{ route('cart.index') }}" class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('cart.*') }}">Keranjang @if($cartCount)<span class="ml-1 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">{{ $cartCount }}</span>@endif</a>@endauth
+        <nav data-tabs data-on="bg-brand text-white" data-off="text-ink/80 hover:bg-sand" class="no-scrollbar mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-2 text-sm font-bold sm:px-6">
+            <a href="{{ route('home') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('home') }}">Jelajah Katalog</a>
+            <a href="{{ route('negotiations.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('negotiations.*') }}">Negosiasi & Tawar @if($awaitingBids)<span class="ml-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">{{ $awaitingBids }}</span>@endif</a>
+            <a href="{{ route('barters.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('barters.*') }}">Barter Hub</a>
+            <a href="{{ route('cod.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('cod.*') }}">Jadwal COD</a>
+            <a href="{{ route('orders.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('orders.*') }}">Pesanan Saya</a>
+            @auth<a href="{{ route('chat.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('chat.*') }}">Chat @if($chatUnread)<span class="ml-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">{{ $chatUnread }}</span>@endif</a>
+            <a href="{{ route('cart.index') }}" data-tab class="whitespace-nowrap rounded-lg px-3 py-1.5 {{ $nav('cart.*') }}">Keranjang @if($cartCount)<span class="ml-1 rounded-full bg-amber-500 px-1.5 text-[10px] text-white">{{ $cartCount }}</span>@endif</a>@endauth
             <span class="mono ml-auto hidden items-center gap-2 whitespace-nowrap text-[11px] font-bold text-brand md:flex"><span class="h-2 w-2 rounded-full bg-brand"></span>Safe Trade MRT/KRL Aktif</span>
         </nav>
     </div>
@@ -86,6 +90,33 @@
     </div>
     <div class="border-t border-sand py-4 text-center text-xs text-ink/50">© {{ date('Y') }} ThriftVerse — proyek Startup Digital, Sistem Informasi.</div>
 </footer>
+<div id="navbar" aria-hidden="true"></div>
+<script>
+// Umpan balik instan saat menu/filter diklik: tombol langsung berubah warna dan muncul garis kemajuan,
+// tanpa menunggu halaman berikutnya selesai dimuat.
+(function () {
+  var bar = document.getElementById('navbar'), timer;
+  function start() { clearTimeout(timer); bar.style.transition = 'none'; bar.style.width = '0'; bar.classList.add('on'); void bar.offsetWidth; bar.style.transition = ''; bar.style.width = '70%'; timer = setTimeout(function () { bar.style.width = '92%'; }, 1800); }
+  function reset() { clearTimeout(timer); bar.classList.remove('on'); bar.style.width = '0'; }
+  function cls(s) { return (s || '').split(' ').filter(Boolean); }
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+    var u; try { u = new URL(a.href, location.href); } catch (_) { return; }
+    if (u.origin !== location.origin) return;
+    if (u.pathname === location.pathname && u.search === location.search) return;
+    var box = a.closest('[data-tabs]');
+    if (box && a.hasAttribute('data-tab')) {
+      var on = cls(box.dataset.on), off = cls(box.dataset.off);
+      box.querySelectorAll('[data-tab]').forEach(function (x) { x.classList.remove.apply(x.classList, on); x.classList.add.apply(x.classList, off); });
+      a.classList.remove.apply(a.classList, off); a.classList.add.apply(a.classList, on);
+    }
+    start();
+  });
+  window.addEventListener('pageshow', reset);
+})();
+</script>
 @stack('scripts')
 </body>
 </html>
